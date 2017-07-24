@@ -1,7 +1,6 @@
 #include <cstdio>
 #include <iostream>
 #include <ctime>
-#include <sstream>
 
 using namespace std;
 
@@ -16,8 +15,8 @@ class BinarySearchTree {
     public:
     BinarySearchTree();
     bool isEmpty();
-    void insert(int);
-    void remove(int);
+    int insert(int);
+    int remove(int);
     void inOrder(node*);
     void printInOrder();
 };
@@ -30,7 +29,8 @@ bool BinarySearchTree::isEmpty() {
     return root == NULL;
 }
 
-void BinarySearchTree::insert(int n) {
+int BinarySearchTree::insert(int n) {
+    int nt = 0;
     node *newNode = new node;
     node *parent;
     newNode->value = n;
@@ -39,23 +39,26 @@ void BinarySearchTree::insert(int n) {
     parent = NULL;
     if (isEmpty()) {
         root = newNode;
-        return;
+        return 0;
     }
     node *curr = root;
     while(curr) {
         parent = curr;
         if (n > curr->value) curr = curr->right;
         else curr = curr->left;
+        nt++;
     }
     if (n > parent->value) parent->right = newNode;
     else parent->left = newNode;
+    return nt;
 }
 
-void BinarySearchTree::remove(int n) {
+int BinarySearchTree::remove(int n) {
+    int nt = 0;
     bool found = false;
     if (isEmpty()) {
         printf("[!] %i could not be found as the tree was empty\n", n);
-        return;
+        return 0;
     }
     node *curr;
     node *parent;
@@ -69,11 +72,12 @@ void BinarySearchTree::remove(int n) {
             parent = curr;
             if (n > curr->value) curr = curr->right;
             else curr = curr-> left;
+            nt++;
         }
     }
     if (!found) {
-        printf("[!] %i could not be deleted as it was not found\n", n);
-        return;
+        printf("\n[!] %i could not be deleted as it was not found\n", n);
+        return nt;
     }
     if (((curr->left == NULL) && (curr->right != NULL)) || ((curr->left != NULL) && (curr->right != NULL))) {
         // node has a single child
@@ -100,6 +104,7 @@ void BinarySearchTree::remove(int n) {
                 delete curr;
             }
         }
+        nt++;
     } else if ((curr->left != NULL) && (curr->right != NULL)) {
         // node has two children
         node *chk;
@@ -133,10 +138,12 @@ void BinarySearchTree::remove(int n) {
                 delete tmp;
             }
         }
+        nt++;
     } else {
         // node has no children
         delete curr;
     }
+    return nt;
 }
 
 void BinarySearchTree::inOrder(node *n) {
@@ -160,6 +167,7 @@ enum Operation {
     _delete,
     _error,
     _exit,
+    clear,
     help
 };
 
@@ -167,37 +175,51 @@ Operation hashOp(string s) {
     if (s == "print") return print;
     if (s == "insert") return insert;
     if (s == "delete") return _delete;
+    if (s == "clear") return clear;
     if (s == "exit") return _exit;
     if (s == "help") return help;
     return _error;
 }
 
 void handlePrint(BinarySearchTree *bst) {
-    stringstream ss;
+    int n;
+    long double t;
+    clock_t begin, end;
     printf("[*] Preparing to print in order...\n");
-    clock_t start;
+    begin = clock();
     bst->printInOrder();
-    ss << (clock() - start) / (double)(CLOCKS_PER_SEC / 1000) << "ms";
+    end = clock();
+    t = (long double)(end - begin) / CLOCKS_PER_SEC * 1000;
     printf("[+] Print in order complete...\n");
-    cout << "[*] Time: " << ss.str() << "; Traversals: " << 2 << endl;
+    printf("[*] Time: %Lfms\n", t);
 }
 
 void handleInsert(BinarySearchTree *bst) {
-    int n;
+    int n, nt;
+    long double t;
+    clock_t begin, end;
     printf("[*] Please enter an integer to insert: ");
     scanf("%i", &n);
-    bst->insert(n);
+    begin = clock();
+    nt = bst->insert(n);
+    end = clock();
+    t = (long double)(end - begin) / CLOCKS_PER_SEC * 1000;
     printf("[+] Inserted %i to tree...\n", n);
-    // todo time and output specs
+    printf("[*] Time: %Lfms; Traversals: %i\n", t, nt);
 }
 
 void handleDelete(BinarySearchTree *bst) {
-    int n;
-    printf("[*] Please enter a valid number to delete: ");
+    int n, nt;
+    long double t;
+    clock_t begin, end;
+    printf("[*] Please enter an integer to remove: ");
     scanf("%i", &n);
-    bst->remove(n);
-    printf("[-] Removed %i from tree...\n", n);
-    // todo time and output specs
+    begin = clock();
+    nt = bst->remove(n);
+    end = clock();
+    t = (long double)(end - begin) / CLOCKS_PER_SEC * 1000;
+    printf("[-] Deleted %i from the tree...\n", n);
+    printf("[*] Time: %Lfms; Traversals: %i\n", t, nt);
 }
 
 void handleExit() {
@@ -206,7 +228,13 @@ void handleExit() {
 }
 
 void handleHelp() {
-    printf("[*] options include: print, insert, delete and exit...\n");
+    printf("[*] commands: \n\n");
+    printf("\t'clear': Clears screen.\n");
+    printf("\t'delete': Deletes [int] from bts (first-occurance basis).\n");
+    printf("\t'exit': Exits CLI with status code 0.\n");
+    printf("\t'help': Displays list of available commands.\n");
+    printf("\t'insert': Inserts [int] into bts.\n");
+    printf("\t'print': Prints each node in bts (in order; post-sort).\n\n");
 }
 
 int main() {
@@ -227,6 +255,12 @@ int main() {
                 break;
             case _delete:
                 handleDelete(&bst);
+                break;
+            case help:
+                handleHelp();
+                break;
+            case clear:
+                system("clear");
                 break;
             case _exit:
                 handleExit();
