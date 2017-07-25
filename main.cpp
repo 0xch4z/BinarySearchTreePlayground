@@ -17,6 +17,7 @@ class BinarySearchTree {
     bool isEmpty();
     int insert(int);
     int remove(int);
+    bool contains(int);
     void inOrder(node*);
     void printInOrder();
 };
@@ -146,6 +147,27 @@ int BinarySearchTree::remove(int n) {
     return nt;
 }
 
+bool BinarySearchTree::contains(int n) {
+    bool found = false;
+    if (isEmpty()) {
+        printf("[!] %i could not be found as tree is empty!\n", n);
+        return false;
+    }
+    node *curr;
+    node *parent;
+    curr = root;
+    while (curr) {
+        if (curr->value == n) {
+            found = true;
+            break;
+        }
+        parent = curr;
+        if (curr->value < n) curr = curr->right;
+        else curr = curr->left;
+    }
+    return found;
+}
+
 void BinarySearchTree::inOrder(node *n) {
     if (!n) return;
     inOrder(n->left);
@@ -164,6 +186,7 @@ void BinarySearchTree::printInOrder() {
 enum Operation {
     print,
     insert,
+    _search,
     _delete,
     _error,
     _exit,
@@ -174,6 +197,7 @@ enum Operation {
 Operation hashOp(string s) {
     if (s == "print") return print;
     if (s == "insert") return insert;
+    if (s == "search") return _search;
     if (s == "delete") return _delete;
     if (s == "clear") return clear;
     if (s == "exit") return _exit;
@@ -222,6 +246,22 @@ void handleDelete(BinarySearchTree *bst) {
     printf("[*] Time: %Lfms; Traversals: %i\n", t, nt);
 }
 
+void handleSearch(BinarySearchTree *bst) {
+    int n;
+    bool contains;
+    long double t;
+    clock_t begin, end;
+    printf("[*] Please enter an integer to search for: ");
+    scanf("%i", &n);
+    begin = clock();
+    contains = bst->contains(n);
+    end = clock();
+    t = (long double)(end - begin) / CLOCKS_PER_SEC * 1000;
+    if (contains) printf("[+] the tree does contain %i...\n", n);
+    else printf("[-] the tree does not contain %i...\n", n);
+    printf("[*] Time: %LFms\n", t);
+}
+
 void handleExit() {
     printf("Goodbye! (:\n\n");
     exit(0);
@@ -234,7 +274,8 @@ void handleHelp() {
     printf("\t'exit': Exits CLI with status code 0.\n");
     printf("\t'help': Displays list of available commands.\n");
     printf("\t'insert': Inserts [int] into bts.\n");
-    printf("\t'print': Prints each node in bts (in order; post-sort).\n\n");
+    printf("\t'print': Prints each node in bts (in order; post-sort).\n");
+    printf("\t'search': Returns boolean representation of tree[int].\n\n");
 }
 
 int main() {
@@ -252,6 +293,9 @@ int main() {
                 break;
             case insert:
                 handleInsert(&bst);
+                break;
+            case _search:
+                handleSearch(&bst);
                 break;
             case _delete:
                 handleDelete(&bst);

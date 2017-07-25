@@ -13,3 +13,4 @@
 - **"help"** - Displays list of available commands.
 - **"insert"** - Inserts [int] into bts.
 - **"print"** - Prints each node in bts (in order; post-sort).
+- **"search"** - Returns boolean representation of tree[int].
